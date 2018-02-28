@@ -39,7 +39,8 @@ def start():
 @bottle.post('/move')
 def move():
     print "Completed Move"
-    board = [[0 for x in range(board_height)] for y in range(board_width)] 
+    board = [[0 for x in range(board_height)] for y in range(board_width)]
+    print board
     data = bottle.request.json
     ourLength = data.get('you').get('length')
     snakes = data.get('snakes')
