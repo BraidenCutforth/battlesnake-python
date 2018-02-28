@@ -54,6 +54,8 @@ def move():
         if(length < ourLength):
             board[body[0].get('x')][body[0].get('y')] = 2
 
+    print "Completed Move"
+
 
     # TODO: Do things with data
     print data
