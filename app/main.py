@@ -2,7 +2,8 @@ import bottle
 import os
 import random
 
-
+board_width = 0
+board_height = 0
 
 @bottle.route('/')
 def static():
@@ -37,10 +38,24 @@ def start():
 
 @bottle.post('/move')
 def move():
+    board = [[0 for x in range(board_height)] for y in range(board_width)] 
     data = bottle.request.json
+    ourLength = data.get('you').get('length')
     snakes = data.get('snakes')
+    snakeData = snakes.get('data')
+    for snake in snakeData:
+        length = snake.get('length')
+        body = snake.get('body').get('data')
+        for part in body:
+            x = part.get('x')
+            y = part.get('y')
+            board[x][y] = 1
+        if(length < ourLength):
+            board[body[0].get('x')][body[0].get('y')] = 2
+
+
     # TODO: Do things with data
-    print snakes
+    print data
     directions = ['up', 'down', 'left', 'right']
     direction = random.choice(directions)
     print direction
