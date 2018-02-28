@@ -49,6 +49,7 @@ def move():
         for part in body:
             x = part.get('x')
             y = part.get('y')
+            print x, y
             board[x][y] = 1
         if(length < ourLength):
             board[body[0].get('x')][body[0].get('y')] = 2
