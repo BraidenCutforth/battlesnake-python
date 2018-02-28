@@ -38,6 +38,7 @@ def start():
 
 @bottle.post('/move')
 def move():
+    print "Completed Move"
     board = [[0 for x in range(board_height)] for y in range(board_width)] 
     data = bottle.request.json
     ourLength = data.get('you').get('length')
@@ -53,8 +54,6 @@ def move():
             board[x][y] = 1
         if(length < ourLength):
             board[body[0].get('x')][body[0].get('y')] = 2
-
-    print "Completed Move"
 
 
     # TODO: Do things with data
