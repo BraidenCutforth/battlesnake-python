@@ -21,7 +21,10 @@ def start():
     game_id = data.get('game_id')
     board_width = data.get('width')
     board_height = data.get('height')
-
+    print "START"
+    print board_width
+    print board_height
+    print "END"
     head_url = '%s://%s/static/head.png' % (
         bottle.request.urlparts.scheme,
         bottle.request.urlparts.netloc
