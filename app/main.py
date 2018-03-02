@@ -89,6 +89,7 @@ def start():
 @bottle.post('/move')
 def move():
     startTime = current_milli_time()
+    healthThreshold = 30
     data = bottle.request.json
     board_height = data['height']
     board_width = data['width']
@@ -112,7 +113,11 @@ def move():
         x = food['x']
         y = food['y']
         board[y][x] = 2
-    plan = BFS(board, ourHead, [2, 3], board_height, board_width)
+    if data['you']['health'] < healthThreshold:
+        goals = [2]
+    else:
+        goals = [2,3]
+    plan = BFS(board, ourHead, goals, board_height, board_width)
     # for x in board:
     #     print x
 
