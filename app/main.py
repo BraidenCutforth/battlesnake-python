@@ -24,9 +24,9 @@ def BFS(board, head, goals, height, width):
             if(y>=0 and y<height and x>=0 and x<width and board[y][x]!=1 and board[y][x]!=4):
                 paths[y][x] = pos
                 if board[y][x] in goals:
-                    print "Paths: "
-                    for t in paths:
-                        print t
+                    # print "Paths: "
+                    # for t in paths:
+                    #    print t
                     return [spot, paths]
                 else:
                     board[y][x] = 1
@@ -68,7 +68,10 @@ def getMove(head, spot, paths):
     # print "Our head: ", head
     y = spot['y']
     x = spot['x']
-    while paths[y][x]['y'] != head['y'] and paths[y][x]['x'] != head['x']:
+    print "Head: ", head
+    print "Spot: ", spot
+    print "Paths is: ", paths[y][x] != None
+    while paths[y][x]['y'] != head['y'] and paths[y][x]['x'] != head['x'] and paths[y][x] != None:
         temp = paths[y][x]
         print "Path pos: ", temp
         y = temp['y']
@@ -210,6 +213,7 @@ def move():
     if plan != None:
         endTime = current_milli_time()
         print "Time: ", (endTime - startTime)
+        # print "Plan!!!", plan
         direction = getMove(ourHead, plan[0], plan[1])
         print "Chosen move: ", direction
         return{
