@@ -29,6 +29,26 @@ def BFS(board, head, goals, height, width):
                     q.put(spot)
     return None
 
+def decideHead(snake, height, width):
+    body = snake['body']['data']
+    head = {'y':body[0]['y'],'x':body[0]['x']}
+    neck = {'y':body[1]['y'],'x':body[1]['x']}
+    moves = []
+    moves.append({'y': head['y'],'x':head['x']-1})
+    moves.append({'y': head['y'],'x':head['x']+1})
+    moves.append({'y': head['y']-1,'x':head['x']})
+    moves.append({'y': head['y']+1,'x':head['x']})
+    for move in moves:
+        if (not validMove(move, height, width)) or neck==move:
+            moves.remove(move)
+    return moves
+    
+
+def validMove(move, height, width):
+    if(move['x']>=0 and move['x']<width and move['y']>=0 and move['y']<height):
+        return True
+    return False
+
 def getMove(head, spot, paths):
     # print "Paths array:"
     # for x in paths:
@@ -52,6 +72,42 @@ def getMove(head, spot, paths):
     else:
         return "right"
         
+def buildBoard(data):
+    board = [[0 for x in range(board_width)] for y in range(board_height)]
+    ourLength = data['you']['length']
+    print "Our Length: ", ourLength
+    snakeData = data['snakes']['data']
+    for snake in snakeData:
+        length = snake['length']
+        body = snake['body']['data']
+        health = snake['health']
+        # Mark all the body pieces as occupied
+        for part in body:
+            x = part['x']
+            y = part['y']
+                # print y, x
+            board[y][x] = 1
+        # Mark tails as dangerous if the tail wont grow
+        if health < 100:
+            board[body[-1]['y']][body[-1]['x']] = 4
+        # If we are bigger mark possible enemy head locations
+        # Else mark the spots around enemy head as dangerous
+        if(length < ourLength):
+            move = decideHead(snake, board_height, board_width)[0]
+            board[move['y']][move['x']] = 3
+        else:
+            moves = decideHead(snake, board_height, board_width)
+            for move in moves:
+                board[move['y']][move['x']] = 4
+            
+
+    foodData = data['food']['data']
+    for food in foodData:
+        x = food['x']
+        y = food['y']
+        board[y][x] = 2
+    return board
+
 
 @bottle.route('/')
 def static():
@@ -93,26 +149,8 @@ def move():
     data = bottle.request.json
     board_height = data['height']
     board_width = data['width']
-    board = [[0 for x in range(board_width)] for y in range(board_height)]
-    ourLength = data['you']['length']
     ourHead = data['you']['body']['data'][0]
-    print "Our Length: ", ourLength
-    snakeData = data['snakes']['data']
-    for snake in snakeData:
-        length = snake['length']
-        body = snake['body']['data']
-        for part in body:
-            x = part['x']
-            y = part['y']
-            # print y, x
-            board[y][x] = 1
-        if(length < ourLength):
-            board[body[0]['y']][body[0]['x']] = 2
-    foodData = data['food']['data']
-    for food in foodData:
-        x = food['x']
-        y = food['y']
-        board[y][x] = 2
+    board = buildBoard(data)
     if data['you']['health'] < healthThreshold:
         goals = [2]
     else:
