@@ -20,7 +20,7 @@ def BFS(board, head, goals, height, width):
         adjacent.append([pos[0], pos[1]+1])
         for spot in adjacent:
             y, x = spot[0], spot[1]
-            if(y>=0 and y<height and x>=0 and x<width and board[y][x]!=1):
+            if(y>=0 and y<height and x>=0 and x<width and board[y][x]!=1 and board[y][x]!=4):
                 paths[y][x] = pos
                 if board[y][x] in goals:
                     return [spot, paths]
@@ -40,13 +40,19 @@ def decideHead(snake, height, width):
     moves.append({'y': head['y']+1,'x':head['x']})
     for move in moves:
         if (not validMove(move, height, width)) or neck==move:
+            print "Removing: ", move
+            print "is neck:", neck==move
             moves.remove(move)
     return moves
     
 
 def validMove(move, height, width):
+    print "height: ", height, " width: ", width
+    print ("Is this a valid move: "), move
     if(move['x']>=0 and move['x']<width and move['y']>=0 and move['y']<height):
+        print True
         return True
+    print False
     return False
 
 def getMove(head, spot, paths):
@@ -72,9 +78,10 @@ def getMove(head, spot, paths):
     else:
         return "right"
         
-def buildBoard(data):
-    board = [[0 for x in range(board_width)] for y in range(board_height)]
+def buildBoard(data, width, height):
+    board = [[0 for x in range(width)] for y in range(height)]
     ourLength = data['you']['length']
+    ourID = data['you']['id']
     print "Our Length: ", ourLength
     snakeData = data['snakes']['data']
     for snake in snakeData:
@@ -90,22 +97,30 @@ def buildBoard(data):
         # Mark tails as dangerous if the tail wont grow
         if health < 100:
             board[body[-1]['y']][body[-1]['x']] = 4
+        #If our snake continue
+        if snake['id'] == ourID:
+            continue
         # If we are bigger mark possible enemy head locations
         # Else mark the spots around enemy head as dangerous
+        print "There length: ", length
+        moves = decideHead(snake, height, width)
         if(length < ourLength):
-            move = decideHead(snake, board_height, board_width)[0]
-            board[move['y']][move['x']] = 3
-        else:
-            moves = decideHead(snake, board_height, board_width)
             for move in moves:
-                board[move['y']][move['x']] = 4
+                if board[move['y']][move['x']] != 1:
+                    board[move['y']][move['x']] = 3
+        else:
+            print "Moves: ", moves
+            for move in moves:
+                if board[move['y']][move['x']] != 1:
+                    board[move['y']][move['x']] = 4
             
 
     foodData = data['food']['data']
     for food in foodData:
         x = food['x']
         y = food['y']
-        board[y][x] = 2
+        if board[y][x] != 4:
+            board[y][x] = 2
     return board
 
 
@@ -150,16 +165,15 @@ def move():
     board_height = data['height']
     board_width = data['width']
     ourHead = data['you']['body']['data'][0]
-    board = buildBoard(data)
+    board = buildBoard(data, board_width, board_height)
+    # print board
+    for x in board:
+        print x
     if data['you']['health'] < healthThreshold:
         goals = [2]
     else:
         goals = [2,3]
     plan = BFS(board, ourHead, goals, board_height, board_width)
-
-    # print board
-    for x in board:
-        print x
 
     if plan != None:
         endTime = current_milli_time()
@@ -189,6 +203,6 @@ if __name__ == '__main__':
     board_height = 0
     bottle.run(
         application,
-        host=os.getenv('IP', '0.0.0.0'),
+        host=os.getenv('IP', '192.168.96.122'),
         port=os.getenv('PORT', '8080'),
         debug = True)
