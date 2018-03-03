@@ -8,21 +8,25 @@ current_milli_time = lambda: int(round(time.time() * 1000))
 
 def BFS(board, head, goals, height, width):
     q = Queue.Queue()
-    q.put([head['y'], head['x']])
+    q.put({'y':head['y'], 'x':head['x']})
     # visited = [[False for x in range(board_width)] for y in range(board_height)]
     paths = [[None for x in range(width)] for y in range(height)]
     while not q.empty():
         pos = q.get()
+        # print "Pos1: ", pos
         adjacent = []
-        adjacent.append([pos[0]-1, pos[1]])
-        adjacent.append([pos[0]+1, pos[1]])
-        adjacent.append([pos[0], pos[1]-1])
-        adjacent.append([pos[0], pos[1]+1])
+        adjacent.append({'y':pos['y']-1, 'x':pos['x']})
+        adjacent.append({'y':pos['y']+1, 'x':pos['x']})
+        adjacent.append({'y':pos['y'], 'x':pos['x']-1})
+        adjacent.append({'y':pos['y'], 'x':pos['x']+1})
         for spot in adjacent:
-            y, x = spot[0], spot[1]
+            y, x = spot['y'], spot['x']
             if(y>=0 and y<height and x>=0 and x<width and board[y][x]!=1 and board[y][x]!=4):
                 paths[y][x] = pos
                 if board[y][x] in goals:
+                    print "Paths: "
+                    for t in paths:
+                        print t
                     return [spot, paths]
                 else:
                     board[y][x] = 1
@@ -40,19 +44,19 @@ def decideHead(snake, height, width):
     moves.append({'y': head['y']+1,'x':head['x']})
     for move in moves:
         if (not validMove(move, height, width)) or neck==move:
-            print "Removing: ", move
-            print "is neck:", neck==move
+            # print "Removing: ", move
+            # print "is neck:", neck==move
             moves.remove(move)
     return moves
     
 
 def validMove(move, height, width):
-    print "height: ", height, " width: ", width
-    print ("Is this a valid move: "), move
+    # print "height: ", height, " width: ", width
+    # print ("Is this a valid move: "), move
     if(move['x']>=0 and move['x']<width and move['y']>=0 and move['y']<height):
-        print True
+        # print True
         return True
-    print False
+    # print False
     return False
 
 def getMove(head, spot, paths):
@@ -60,20 +64,20 @@ def getMove(head, spot, paths):
     # for x in paths:
     #     print x
     
-    print "Target spot: ", spot
-    print "Our head: ", head
-    y = spot[0]
-    x = spot[1]
-    while paths[y][x] != head:
+    # print "Target spot: ", spot
+    # print "Our head: ", head
+    y = spot['y']
+    x = spot['x']
+    while paths[y][x]['y'] != head['y'] and paths[y][x]['x'] != head['x']:
         temp = paths[y][x]
         print "Path pos: ", temp
-        y = temp[0]
-        x = temp[1]
-    if(y == head[0]-1):
+        y = temp['y']
+        x = temp['x']
+    if(y == head['y']-1):
         return "up"
-    elif(y == head[0]+1):
+    elif(y == head['y']+1):
         return "down"
-    elif(x == head[1]-1):
+    elif(x == head['x']-1):
         return "left"
     else:
         return "right"
@@ -82,7 +86,7 @@ def buildBoard(data, width, height):
     board = [[0 for x in range(width)] for y in range(height)]
     ourLength = data['you']['length']
     ourID = data['you']['id']
-    print "Our Length: ", ourLength
+    # print "Our Length: ", ourLength
     snakeData = data['snakes']['data']
     for snake in snakeData:
         length = snake['length']
@@ -102,14 +106,14 @@ def buildBoard(data, width, height):
             continue
         # If we are bigger mark possible enemy head locations
         # Else mark the spots around enemy head as dangerous
-        print "There length: ", length
+        # print "There length: ", length
         moves = decideHead(snake, height, width)
         if(length < ourLength):
             for move in moves:
                 if board[move['y']][move['x']] != 1:
                     board[move['y']][move['x']] = 3
         else:
-            print "Moves: ", moves
+            # print "Moves: ", moves
             for move in moves:
                 if board[move['y']][move['x']] != 1:
                     board[move['y']][move['x']] = 4
@@ -123,28 +127,34 @@ def buildBoard(data, width, height):
             board[y][x] = 2
     return board
 
-def DFS(board, head, goals, height, width):
-    q = Queue.Queue()
-    q.put([head['y'], head['x']])
+def DFS(board, head, height, width):
+    print "DFS!"
+    q = Queue.LifoQueue()
+    q.put({'y':head['y'], 'x':head['x'], 'depth':1})
     # visited = [[False for x in range(board_width)] for y in range(board_height)]
     paths = [[None for x in range(width)] for y in range(height)]
     while not q.empty():
         pos = q.get()
         adjacent = []
-        adjacent.append([pos[0]-1, pos[1]])
-        adjacent.append([pos[0]+1, pos[1]])
-        adjacent.append([pos[0], pos[1]-1])
-        adjacent.append([pos[0], pos[1]+1])
+        adjacent.append([pos['y']-1, pos['x']])
+        adjacent.append([pos['y']+1, pos['x']])
+        adjacent.append([pos['y'], pos['x']-1])
+        adjacent.append([pos['y'], pos['x']+1])
         for spot in adjacent:
             y, x = spot[0], spot[1]
             if(y>=0 and y<height and x>=0 and x<width and board[y][x]!=1):
-                paths[y][x] = pos
-                if board[y][x] in goals:
-                    return [spot, paths]
-                else:
-                    board[y][x] = 1
-                    q.put(spot)
-    return None
+                paths[y][x] = pos;
+                board[y][x] = 1
+                q.put({'y':y, 'x':x, 'depth':pos['depth']+1})
+    depth = 0
+    path = None
+    for y in range(height):
+        for x in range(width):
+            if paths[y][x]['depth'] > depth:
+                depth = paths[y][x]['depth']
+                path = paths[y][x]
+
+    return path
 
 @bottle.route('/')
 def static():
@@ -200,7 +210,7 @@ def move():
     if plan != None:
         endTime = current_milli_time()
         print "Time: ", (endTime - startTime)
-        direction = getMove([ourHead['y'],ourHead['x']], plan[0], plan[1])
+        direction = getMove(ourHead, plan[0], plan[1])
         print "Chosen move: ", direction
         return{
             'move': direction
