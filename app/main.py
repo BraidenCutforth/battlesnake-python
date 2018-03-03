@@ -123,6 +123,28 @@ def buildBoard(data, width, height):
             board[y][x] = 2
     return board
 
+def DFS(board, head, goals, height, width):
+    q = Queue.Queue()
+    q.put([head['y'], head['x']])
+    # visited = [[False for x in range(board_width)] for y in range(board_height)]
+    paths = [[None for x in range(width)] for y in range(height)]
+    while not q.empty():
+        pos = q.get()
+        adjacent = []
+        adjacent.append([pos[0]-1, pos[1]])
+        adjacent.append([pos[0]+1, pos[1]])
+        adjacent.append([pos[0], pos[1]-1])
+        adjacent.append([pos[0], pos[1]+1])
+        for spot in adjacent:
+            y, x = spot[0], spot[1]
+            if(y>=0 and y<height and x>=0 and x<width and board[y][x]!=1):
+                paths[y][x] = pos
+                if board[y][x] in goals:
+                    return [spot, paths]
+                else:
+                    board[y][x] = 1
+                    q.put(spot)
+    return None
 
 @bottle.route('/')
 def static():
