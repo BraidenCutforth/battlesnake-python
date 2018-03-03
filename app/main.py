@@ -156,8 +156,10 @@ def move():
     else:
         goals = [2,3]
     plan = BFS(board, ourHead, goals, board_height, board_width)
-    # for x in board:
-    #     print x
+
+    # print board
+    for x in board:
+        print x
 
     if plan != None:
         endTime = current_milli_time()
