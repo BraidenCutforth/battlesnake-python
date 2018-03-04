@@ -174,9 +174,11 @@ def start():
 
     # TODO: Do things with data
     return {
-        'color': '#00FF00',
-        'taunt': '{} ({}x{})'.format(game_id, board_width, board_height),
-        'head_url': head_url
+        'color': '#FF9900',
+        'taunt': 'we be chillin',
+        'head_url': 'https://www.frenemic.com/wp-content/uploads/2017/10/untitled.jpg',
+        'head_type': 'tongue',
+        'tail_type': 'curled'
     }
 
 
