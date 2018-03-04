@@ -29,6 +29,20 @@ def BFS(board, head, goals, height, width):
                     q.put(spot)
     return None
 
+def findOpen(board, head, height, width):
+    x = head['x']
+    y = head['y']
+    moves=[]
+    moves.append({'y': y,'x':x-1, 'direction':"up"})
+    moves.append({'y': y,'x':x+1, 'direction':"down"})
+    moves.append({'y': y-1,'x':x, 'direction':"left"})
+    moves.append({'y': y+1,'x':x, 'direction':"right"})
+    for move in moves:
+        if not validMove(move, height, width) or board[move['y']][move['x']] == 1:
+            moves.remove(move)
+    return moves[0]['direction']
+
+
 def decideHead(snake, height, width):
     body = snake['body']['data']
     head = {'y':body[0]['y'],'x':body[0]['x']}
@@ -38,12 +52,16 @@ def decideHead(snake, height, width):
     moves.append({'y': head['y'],'x':head['x']+1})
     moves.append({'y': head['y']-1,'x':head['x']})
     moves.append({'y': head['y']+1,'x':head['x']})
+    print "Moves before:", moves
+    returnVal = []
     for move in moves:
-        if (not validMove(move, height, width)) or neck==move:
-            print "Removing: ", move
+        print "Checking move: ",move
+        if  validMove(move, height, width) and neck!=move:
+            print "Adding: ", move
             print "is neck:", neck==move
-            moves.remove(move)
-    return moves
+            returnVal.append(move)
+    print "Moves after: ", returnVal
+    return returnVal
     
 
 def validMove(move, height, width):
@@ -185,7 +203,7 @@ def move():
         }
     else:
         directions = ['up', 'down', 'left', 'right']
-        direction = random.choice(directions)
+        direction = findOpen(board, ourHead, board_height, board_width)
         print "Random move:", direction
         return {
             'move': direction,
