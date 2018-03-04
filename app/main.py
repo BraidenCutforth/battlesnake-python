@@ -3,7 +3,7 @@ import os
 import random
 import time
 import Queue
-
+import copy
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 def BFS(board, head, goals, height, width):
@@ -32,15 +32,20 @@ def BFS(board, head, goals, height, width):
 def findOpen(board, head, height, width):
     x = head['x']
     y = head['y']
+    for t in board:
+        print t
     moves=[]
-    moves.append({'y': y,'x':x-1, 'direction':"up"})
-    moves.append({'y': y,'x':x+1, 'direction':"down"})
-    moves.append({'y': y-1,'x':x, 'direction':"left"})
-    moves.append({'y': y+1,'x':x, 'direction':"right"})
+    moves.append({'y': y,'x':x-1, 'direction':"left"})
+    moves.append({'y': y,'x':x+1, 'direction':"right"})
+    moves.append({'y': y-1,'x':x, 'direction':"up"})
+    moves.append({'y': y+1,'x':x, 'direction':"down"})
+    returnVal = []
     for move in moves:
-        if not validMove(move, height, width) or board[move['y']][move['x']] == 1:
-            moves.remove(move)
-    return moves[0]['direction']
+        # print "Board val: ", board[move['y']][move['x']]
+        if validMove(move, height, width) and board[move['y']][move['x']] != 1:
+            returnVal.append(move)
+    print "Find open values:", returnVal
+    return returnVal[0]['direction']
 
 
 def decideHead(snake, height, width):
@@ -52,15 +57,15 @@ def decideHead(snake, height, width):
     moves.append({'y': head['y'],'x':head['x']+1})
     moves.append({'y': head['y']-1,'x':head['x']})
     moves.append({'y': head['y']+1,'x':head['x']})
-    print "Moves before:", moves
+    # print "Moves before:", moves
     returnVal = []
     for move in moves:
-        print "Checking move: ",move
+        # print "Checking move: ",move
         if  validMove(move, height, width) and neck!=move:
-            print "Adding: ", move
-            print "is neck:", neck==move
+            # print "Adding: ", move
+            # print "is neck:", neck==move
             returnVal.append(move)
-    print "Moves after: ", returnVal
+    # print "Moves after: ", returnVal
     return returnVal
     
 
@@ -68,7 +73,7 @@ def validMove(move, height, width):
     print "height: ", height, " width: ", width
     print ("Is this a valid move: "), move
     if(move['x']>=0 and move['x']<width and move['y']>=0 and move['y']<height):
-        print True
+        # print True
         return True
     print False
     return False
@@ -78,13 +83,13 @@ def getMove(head, spot, paths):
     # for x in paths:
     #     print x
     
-    print "Target spot: ", spot
-    print "Our head: ", head
+    # print "Target spot: ", spot
+    # print "Our head: ", head
     y = spot[0]
     x = spot[1]
     while paths[y][x] != head:
         temp = paths[y][x]
-        print "Path pos: ", temp
+        # print "Path pos: ", temp
         y = temp[0]
         x = temp[1]
     if(y == head[0]-1):
@@ -100,7 +105,7 @@ def buildBoard(data, width, height):
     board = [[0 for x in range(width)] for y in range(height)]
     ourLength = data['you']['length']
     ourID = data['you']['id']
-    print "Our Length: ", ourLength
+    # print "Our Length: ", ourLength
     snakeData = data['snakes']['data']
     for snake in snakeData:
         length = snake['length']
@@ -120,14 +125,14 @@ def buildBoard(data, width, height):
             continue
         # If we are bigger mark possible enemy head locations
         # Else mark the spots around enemy head as dangerous
-        print "There length: ", length
+        # print "There length: ", length
         moves = decideHead(snake, height, width)
         if(length < ourLength):
             for move in moves:
                 if board[move['y']][move['x']] != 1:
                     board[move['y']][move['x']] = 3
         else:
-            print "Moves: ", moves
+            # print "Moves: ", moves
             for move in moves:
                 if board[move['y']][move['x']] != 1:
                     board[move['y']][move['x']] = 4
@@ -185,13 +190,14 @@ def move():
     ourHead = data['you']['body']['data'][0]
     board = buildBoard(data, board_width, board_height)
     # print board
-    for x in board:
-        print x
+    # for x in board:
+    #     print x
     if data['you']['health'] < healthThreshold:
         goals = [2]
     else:
         goals = [2,3]
-    plan = BFS(board, ourHead, goals, board_height, board_width)
+    planBoard = copy.deepcopy(board)
+    plan = BFS(planBoard, ourHead, goals, board_height, board_width)
 
     if plan != None:
         endTime = current_milli_time()
