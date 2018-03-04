@@ -29,6 +29,36 @@ def BFS(board, head, goals, height, width):
                     q.put(spot)
     return None
 
+def DFS(board, head, height, width):
+    q = Queue.LifoQueue()
+    q.put([head['y'], head['x'], 0])
+    # visited = [[False for x in range(board_width)] for y in range(board_height)]
+    paths = [[None for x in range(width)] for y in range(height)]
+    while not q.empty():
+        pos = q.get()
+        adjacent = []
+        adjacent.append([pos[0]-1, pos[1]])
+        adjacent.append([pos[0]+1, pos[1]])
+        adjacent.append([pos[0], pos[1]-1])
+        adjacent.append([pos[0], pos[1]+1])
+        for spot in adjacent:
+            y, x = spot[0], spot[1]
+            if(y>=0 and y<height and x>=0 and x<width and board[y][x]!=1):
+                paths[y][x] = pos
+                board[y][x] = 1
+                spot.append(pos[2]+1)
+                q.put(spot)
+    currMove = None
+    currDepth = 0
+    print paths
+    for x in paths:
+        for y in x:
+            if (y != None) and (y[2] > currDepth):
+                print "@Y: ", y
+                currDepth = y[2]
+                currMove = y
+    return [currMove, paths]
+    
 def decideHead(snake, height, width):
     body = snake['body']['data']
     head = {'y':body[0]['y'],'x':body[0]['x']}
@@ -47,12 +77,12 @@ def decideHead(snake, height, width):
     
 
 def validMove(move, height, width):
-    print "height: ", height, " width: ", width
-    print ("Is this a valid move: "), move
+    # print "height: ", height, " width: ", width
+    # print ("Is this a valid move: "), move
     if(move['x']>=0 and move['x']<width and move['y']>=0 and move['y']<height):
-        print True
+        # print True
         return True
-    print False
+    # print False
     return False
 
 def getMove(head, spot, paths):
@@ -64,6 +94,9 @@ def getMove(head, spot, paths):
     print "Our head: ", head
     y = spot[0]
     x = spot[1]
+    print "Paths y:", paths[y][x][0] 
+    print "Paths x:", paths[y][x][1]
+    print "Equal: ", paths[y][x] == head
     while paths[y][x] != head:
         temp = paths[y][x]
         print "Path pos: ", temp
@@ -109,7 +142,7 @@ def buildBoard(data, width, height):
                 if board[move['y']][move['x']] != 1:
                     board[move['y']][move['x']] = 3
         else:
-            print "Moves: ", moves
+            # print "Moves: ", moves
             for move in moves:
                 if board[move['y']][move['x']] != 1:
                     board[move['y']][move['x']] = 4
@@ -184,9 +217,10 @@ def move():
             'move': direction
         }
     else:
-        directions = ['up', 'down', 'left', 'right']
+        plan = DFS(board, ourHead, board_height, board_width)
+        directions = getMove([ourHead['y'],ourHead['x']], plan[0], plan[1])
         direction = random.choice(directions)
-        print "Random move:", direction
+        print "DFS move:", direction
         return {
             'move': direction,
         }
